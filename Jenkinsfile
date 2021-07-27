@@ -40,13 +40,13 @@ pipeline {
         }
         stage('DeployToProduction') {
             when {
-                branch 'master'
+                branch 'master-copy'
             }
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
                 kubernetesDeploy(
-                    kubeconfigId: 'kubeconfig',
+                    kubeconfigId: 'kubectl_creds',
                     configs: 'train-schedule-kube.yml',
                     enableConfigSubstitution: true
                 )
