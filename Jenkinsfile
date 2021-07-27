@@ -38,13 +38,36 @@ pipeline {
                 }
             }
         }
+        stage('CanaryDeployment') {
+            when {
+                branch 'master-copy'
+            }
+            environment {
+                CANARY_REPLICAS = 1
+            }
+            steps {
+                kubernetesDeploy(
+                    kubeconfigId: 'kubectl_creds',
+                    configs: 'train-schedule-kube-canary.yml',
+                    enableConfigSubstitution: true
+                )
+            }
+        }
         stage('DeployToProduction') {
             when {
                 branch 'master-copy'
             }
+            environment {
+                CANARY_REPLICAS = 0
+            }
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
+                kubernetesDeploy(
+                    kubeconfigId: 'kubectl_creds',
+                    configs: 'train-schedule-kube-canary.yml',
+                    enableConfigSubstitution: true
+                )
                 kubernetesDeploy(
                     kubeconfigId: 'kubectl_creds',
                     configs: 'train-schedule-kube.yml',
